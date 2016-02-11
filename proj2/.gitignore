@@ -1,0 +1,8 @@
+.idea
+*.iml
+__pycache__/*
+out.txt
+*.txt
+*.tar
+*.zip
+*.7z
