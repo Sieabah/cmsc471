@@ -6,16 +6,9 @@ ID: JZ28610
 
 Holds all the different optimization functions
 """
-from typing import Callable, Dict
-from enum import Enum
+from typing import Callable, Dict, Tuple, List
 from random import uniform, randint
 import math
-
-
-class Direction(Enum):
-    left = -1
-    equal = 0
-    right = 1
 
 
 class Optimization:
@@ -26,43 +19,18 @@ class Optimization:
         :param step_size
         :return:
         """
-        return {'x': uniform(0, 1/step_size), 'y': uniform(0, 1/step_size)}
+        return {'x': uniform(-1/step_size, 1/step_size), 'y': uniform(-1/step_size, 1/step_size)}
 
     @staticmethod
-    def get_direction(left: float, current: float, right: float) -> Direction:
+    def calculate_func_at_degree(func: Callable[[float, float], float], step_size:
+                float, x: float, y: float, deg: int) -> Tuple[float, float, float]:
         """
-        Get direction for basic hill climbing
-        :param left: left value
-        :param current: current value
-        :param right: right value
-        :return: Direction to go
-        """
-        # Right greater than current
-        if right > current:
-            # Is right greater than left
-            if right > left:
-                # Confirmed right is highest
-                return Direction.right
-
-        # Knowing right is less than current or right is less than left
-
-        # Is left greater than current?
-        if left > current:
-            # Found the direction
-            return Direction.right
-
-        # Found max
-        return None
-
-    @staticmethod
-    def calculate_func_at_degree(func: Callable[[float, float], float], step_size: float, x: float, y: float, deg: int) -> float:
-        """
-
-        :param func:
-        :param step_size:
+        Calculate the next value given center, radius, and degree
+        :param func: function that has a value
+        :param step_size: radius
         :param x:
         :param y:
-        :param deg:
+        :param deg: degree location
         :return:
         """
         rad = math.radians(deg)
@@ -71,20 +39,22 @@ class Optimization:
         return local_x, local_y, func(local_x, local_y)
 
     @staticmethod
-    def get_highest(func: Callable[[float, float], float], step_size: float, x: float, y: float, divisions: int = 1):
+    def get_highest(func: Callable[[float, float], float], step_size: float, x: float,
+                    y: float, divisions: int = 1) -> Tuple[float, float, float]:
         """
-
-        :param func:
-        :param step_size:
-        :param x:
-        :param y:
-        :param divisions:
+        Get highest value looking around the center step_size away (360 degrees default)
+        :param func: Function to determine value
+        :param step_size: distance away
+        :param x: center-x
+        :param y: center-y
+        :param divisions: How many divisions of the circle
         :return:
         """
         highest = func(x, y)
         max_x = x
         max_y = y
 
+        # For entire range 0 - 360
         for deg in range(math.ceil(360/divisions)):
             local_x, local_y, curr = Optimization.calculate_func_at_degree(func, step_size, x, y, deg)
             if curr >= highest:
@@ -92,28 +62,33 @@ class Optimization:
                 max_x = local_x
                 max_y = local_y
 
+        # If max_x or max_y didn't change we didn't move
         if max_x == x and max_y == y:
             return None
 
+        # Return new x, y, and resulting value
         return max_x, max_y, highest
 
     @staticmethod
-    def color(r: int = None, g: int = None, b: int = None) -> str:
+    def color(r: int = None, g: int = None, b: int = None) -> Tuple[int, int, int]:
         """
-
-        :param r:
-        :param g:
-        :param b:
-        :return:
+        Randomly generate a rgb color of values not present
+        :param r: red
+        :param g: green
+        :param b: blue
+        :return: tuple of three colors
         """
         r = r if r else randint(0, 255)
         g = g if g else randint(0, 255)
         b = b if b else randint(0, 255)
 
-        return '#%02x%02x%02x' % (r, g, b)
+        #return '#%02x%02x%02x' % (r, g, b)
+
+        return r, g, b
 
     @staticmethod
-    def hill_climb(func: Callable[[float, float], float], step_size: float, start_x: float = None, start_y: float = None):
+    def hill_climb(func: Callable[[float, float], float], step_size: float,
+                   start_x: float = None, start_y: float = None) -> Tuple[float, dict]:
         """
         Generalize hill climb algorithm
         :param func: function to call
@@ -164,7 +139,8 @@ class Optimization:
 
 
     @staticmethod
-    def hill_climb_random_restart(func: Callable[[float, float], float], step_size: float, num_restarts: int):
+    def hill_climb_random_restart(func: Callable[[float, float], float], step_size: float,
+                                  num_restarts: int) -> Tuple[float, List[dict]]:
         """
         Hill climbing with random restarts
         :param func: function to call
@@ -218,7 +194,8 @@ class Optimization:
 
     # TODO: Make this work correctly
     @staticmethod
-    def simulated_annealing(func: Callable[[float, float], float], step_size: float, max_temp: float) -> float:
+    def simulated_annealing(func: Callable[[float, float], float], step_size: float,
+                            max_temp: float) -> Tuple[float, List[dict]]:
         """
         Simulated annealing
         :param func: function to call
@@ -239,10 +216,6 @@ class Optimization:
             x = coords.get('x', 0)
             y = coords.get('y', 0)
 
-            left = lambda: func(x-step_size, y-step_size)
-            current = lambda: func(x, y)
-            right = lambda: func(x+step_size, y+step_size)
-
             plotgraph.append({
                 'color': Optimization.color(),
                 'points': {
@@ -254,19 +227,19 @@ class Optimization:
 
             # while temp
             while temp > 0:
-                curr = current()
+                current = func(x, y)
                 plotgraph[len(plotgraph)-1]['points']['x'].append(x)
                 plotgraph[len(plotgraph)-1]['points']['y'].append(y)
-                plotgraph[len(plotgraph)-1]['points']['z'].append(curr)
+                plotgraph[len(plotgraph)-1]['points']['z'].append(current)
 
-                if curr > total_max:
-                    total_max = curr
+                if current > total_max:
+                    total_max = current
 
                 # Go in a random direction
                 local_x, local_y, nxt = Optimization.calculate_func_at_degree(func, step_size, x, y, randint(0, 360))
 
                 # get probability of both sides
-                probability = Optimization.annealing_probability(curr, nxt, temp)
+                probability = Optimization.annealing_probability(current, nxt, temp)
 
                 threshold = uniform(0, 1)
 
@@ -274,14 +247,8 @@ class Optimization:
                 if probability > threshold:
                     x = local_x
                     y = local_y
-                else:
-                    continue
 
                 # Decrement temperature
                 temp -= 0.1
-
-
-
-
 
         return total_max, plotgraph
