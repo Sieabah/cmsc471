@@ -1,3 +1,11 @@
+"""
+Optimization.py - Optimization functions
+CMSC 471 - Spring 2016
+Author: Christopher Sidell (csidell1@umbc.edu)
+ID: JZ28610
+
+Holds all the different optimization functions
+"""
 from typing import Callable, Dict
 from enum import Enum
 from random import uniform
@@ -11,9 +19,24 @@ class Direction(Enum):
 
 
 class Optimization:
+    @staticmethod
+    def rand_coords(step_size) -> Dict[str, float]:
+        """
+        Returns random x,y coordinates between 1/step_size
+        :param step_size
+        :return:
+        """
+        return {'x': uniform(0, 1/step_size), 'y': uniform(0, 1/step_size)}
 
     @staticmethod
     def get_direction(left: float, current: float, right: float) -> Direction:
+        """
+        Get direction for basic hill climbing
+        :param left: left value
+        :param current: current value
+        :param right: right value
+        :return: Direction to go
+        """
         # Right greater than current
         if right > current:
             # Is right greater than left
@@ -33,6 +56,14 @@ class Optimization:
 
     @staticmethod
     def hill_climb(func: Callable[[float, float], float], step_size: float, start_x: float = None, start_y: float = None):
+        """
+        Generalize hill climb algorithm
+        :param func: function to call
+        :param step_size: how big is the step
+        :param start_x: starting x
+        :param start_y: starting y
+        :return:
+        """
         if start_x is None:
             start_x = 0
         if start_y is None:
@@ -41,12 +72,15 @@ class Optimization:
         x = start_x
         y = start_y
 
+        # Define easy to use functions
         left = lambda: func(x-step_size, y-step_size)
         current = lambda: func(x, y)
         right = lambda: func(x+step_size, y+step_size)
 
+        # Get the direction we're going to be going in
         direction = Optimization.get_direction(left(), current(), right())
 
+        # Condense to one direction or exit
         if direction == Direction.right:
             evaluated_side = right
         elif direction == Direction.left:
@@ -58,6 +92,8 @@ class Optimization:
 
         while True:
             curr = current()
+
+            # If we can't go up anymore, exit
             if evaluated_side() < curr:
                 return curr
 
@@ -69,11 +105,19 @@ class Optimization:
 
     @staticmethod
     def hill_climb_random_restart(func: Callable[[float, float], float], step_size: float, num_restarts: int):
-        def rand_coords() -> Dict[str, float]:
-            return {'x': uniform(0, 1/step_size), 'y': uniform(0, 1/step_size)}
-
+        """
+        Hill climbing with random restarts
+        :param func: function to call
+        :param step_size: step size
+        :param num_restarts: how many times to restart
+        :return:
+        """
         def attempt():
-            coords = rand_coords()
+            """
+            Attempt a hill climb with random starting points
+            :return:
+            """
+            coords = Optimization.rand_coords(step_size)
             return Optimization.hill_climb(func, step_size, coords.get('x', 0), coords.get('y', 0))
 
         total_max = None
@@ -82,6 +126,7 @@ class Optimization:
         for n in range(num_restarts+1):
             tmp = attempt()
 
+            # Get total max
             if total_max is None or tmp > total_max:
                 total_max = tmp
 
@@ -89,6 +134,15 @@ class Optimization:
 
     @staticmethod
     def annealing_probability(current: float, other: float, temp: float) -> float:
+        """
+        Probability function
+        :param current: current value
+        :param other: other value
+        :param temp: temperature
+        :return:
+        """
+
+        # If it's greater
         if other >= current:
             return 1.0
 
@@ -99,18 +153,20 @@ class Optimization:
 
     @staticmethod
     def simulated_annealing(func: Callable[[float, float], float], step_size: float, max_temp: float) -> float:
-        def rand_coords() -> Dict[str, float]:
-            return {'x': uniform(0, 1/step_size), 'y': uniform(0, 1/step_size)}
-
-        left = lambda: func(x-step_size, y-step_size)
-        current = lambda: func(x, y)
-        right = lambda: func(x+step_size, y+step_size)
+        """
+        Simulated annealing
+        :param func: function to call
+        :param step_size: step size
+        :param max_temp: max temperature
+        :return:
+        """
 
         total_max = func(0, 0)
 
+        # for max_temp times
         for i in range(max_temp):
             temp = max_temp
-            coords = rand_coords()
+            coords = Optimization.rand_coords(step_size)
 
             x = coords.get('x', 0)
             y = coords.get('y', 0)
@@ -119,22 +175,30 @@ class Optimization:
             current = lambda: func(x, y)
             right = lambda: func(x+step_size, y+step_size)
 
+            # while temp
             while temp > 0:
                 curr = current()
 
                 if curr > total_max:
                     total_max = curr
 
+                # get probability of both sides
                 p_left = Optimization.annealing_probability(curr, left(), temp)
                 p_right = Optimization.annealing_probability(curr, right(), temp)
 
-                if p_left > p_right:
-                    x -= step_size
-                    y -= step_size
-                else:
-                    x += step_size
-                    y += step_size
+                threshold = uniform(0, 0.5)
 
-                temp -= 1
+                # Determine which side is better
+                if p_left > p_right:
+                    if p_left >= threshold:
+                        x -= step_size
+                        y -= step_size
+                else:
+                    if p_right >= threshold:
+                        x += step_size
+                        y += step_size
+
+                # Decrement temperature
+                temp -= 0.1
 
         return total_max

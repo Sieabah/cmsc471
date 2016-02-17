@@ -1,3 +1,15 @@
+"""
+driver.py - Optimization Driver
+CMSC 471 - Spring 2016
+Author: Christopher Sidell (csidell1@umbc.edu)
+ID: JZ28610
+
+driver.py runs optimization hill climb, and simulated annealing
+PYTHON VERSION: 3.5.1
+
+Usage: driver.py
+"""
+
 from Optimization import Optimization
 import math
 
@@ -16,4 +28,5 @@ def main():
     print(Optimization.hill_climb_random_restart(z, 0.1, 200))
 
     print(Optimization.simulated_annealing(z, 0.1, 200))
+
 main()
