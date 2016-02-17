@@ -55,6 +55,64 @@ class Optimization:
         return None
 
     @staticmethod
+    def calculate_func_at_degree(func: Callable[[float, float], float], step_size: float, x: float, y: float, deg: int) -> float:
+        """
+
+        :param func:
+        :param step_size:
+        :param x:
+        :param y:
+        :param deg:
+        :return:
+        """
+        rad = math.radians(deg)
+        local_x = x+math.cos(rad)*step_size
+        local_y = y+math.sin(rad)*step_size
+        return local_x, local_y, func(local_x, local_y)
+
+    @staticmethod
+    def get_highest(func: Callable[[float, float], float], step_size: float, x: float, y: float, divisions: int = 1):
+        """
+
+        :param func:
+        :param step_size:
+        :param x:
+        :param y:
+        :param divisions:
+        :return:
+        """
+        highest = func(x, y)
+        max_x = x
+        max_y = y
+
+        for deg in range(math.ceil(360/divisions)):
+            local_x, local_y, curr = Optimization.calculate_func_at_degree(func, step_size, x, y, deg)
+            if curr >= highest:
+                highest = curr
+                max_x = local_x
+                max_y = local_y
+
+        if max_x == x and max_y == y:
+            return None
+
+        return max_x, max_y, highest
+
+    @staticmethod
+    def color(r: int = None, g: int = None, b: int = None) -> str:
+        """
+
+        :param r:
+        :param g:
+        :param b:
+        :return:
+        """
+        r = r if r else randint(0, 255)
+        g = g if g else randint(0, 255)
+        b = b if b else randint(0, 255)
+
+        return '#%02x%02x%02x' % (r, g, b)
+
+    @staticmethod
     def hill_climb(func: Callable[[float, float], float], step_size: float, start_x: float = None, start_y: float = None):
         """
         Generalize hill climb algorithm
@@ -71,40 +129,38 @@ class Optimization:
 
         x = start_x
         y = start_y
-        graphPlot = {
+
+        # Start with empty plot
+        plotgraph = {
             'x': [],
             'y': [],
             'z': []
         }
-        # Define easy to use functions
-        left = lambda: func(x-step_size, y-step_size)
-        current = lambda: func(x, y)
-        right = lambda: func(x+step_size, y+step_size)
 
-        # Get the direction we're going to be going in
-        direction = Optimization.get_direction(left(), current(), right())
+        # Fill our first point
+        plotgraph['x'].append(x)
+        plotgraph['y'].append(y)
+        plotgraph['z'].append(func(x, y))
 
-        # Condense to one direction or exit
-        if direction == Direction.right:
-            evaluated_side = right
-        elif direction == Direction.left:
-            evaluated_side = left
-            # Account for going left
-            step_size = -step_size
-        else:
-            return current()
-
+        # CLIMB
         while True:
-            curr = current()
+            # Get the highest
+            result = Optimization.get_highest(func, step_size, x, y)
 
-            # If we can't go up anymore, exit
-            if evaluated_side() < curr:
-                return curr
+            # If result is none, we're at the peak
+            if result is None:
+                return func(x, y), plotgraph
 
-            x += step_size
-            y += step_size
+            # Unwrap the variables
+            x, y, z = result
 
-        return None
+            # Push to plot
+            plotgraph['x'].append(x)
+            plotgraph['y'].append(y)
+            plotgraph['z'].append(z)
+
+        # If we got to this point we're at the peak from the start
+        return None, plotgraph
 
 
     @staticmethod
@@ -116,6 +172,7 @@ class Optimization:
         :param num_restarts: how many times to restart
         :return:
         """
+
         def attempt():
             """
             Attempt a hill climb with random starting points
@@ -126,15 +183,19 @@ class Optimization:
 
         total_max = None
 
+        graphPlots = []
+
         # +1 to always run once
         for n in range(num_restarts+1):
-            tmp = attempt()
+            tmp, plot = attempt()
+
+            graphPlots.append({'color': Optimization.color(), 'points': plot})
 
             # Get total max
             if total_max is None or tmp > total_max:
                 total_max = tmp
 
-        return total_max
+        return total_max, graphPlots
 
     @staticmethod
     def annealing_probability(current: float, other: float, temp: float) -> float:
@@ -155,6 +216,7 @@ class Optimization:
 
         return math.exp((other - current)/temp)
 
+    # TODO: Make this work correctly
     @staticmethod
     def simulated_annealing(func: Callable[[float, float], float], step_size: float, max_temp: float) -> float:
         """
@@ -169,8 +231,6 @@ class Optimization:
 
         plotgraph = []
 
-        color = lambda r,g,b: '#%02x%02x%02x' % (r, g, b)
-
         # for max_temp times
         for i in range(max_temp):
             temp = max_temp
@@ -184,7 +244,7 @@ class Optimization:
             right = lambda: func(x+step_size, y+step_size)
 
             plotgraph.append({
-                'color': color(randint(0,255),randint(0,255),randint(0,255)),
+                'color': Optimization.color(),
                 'points': {
                     'x': [],
                     'y': [],
@@ -202,21 +262,20 @@ class Optimization:
                 if curr > total_max:
                     total_max = curr
 
-                # get probability of both sides
-                p_left = Optimization.annealing_probability(curr, left(), temp)
-                p_right = Optimization.annealing_probability(curr, right(), temp)
+                # Go in a random direction
+                local_x, local_y, nxt = Optimization.calculate_func_at_degree(func, step_size, x, y, randint(0, 360))
 
-                threshold = uniform(0, 0.5)
+                # get probability of both sides
+                probability = Optimization.annealing_probability(curr, nxt, temp)
+
+                threshold = uniform(0, 1)
 
                 # Determine which side is better
-                if p_left > p_right:
-                    if p_left >= threshold:
-                        x -= step_size
-                        y -= step_size
+                if probability > threshold:
+                    x = local_x
+                    y = local_y
                 else:
-                    if p_right >= threshold:
-                        x += step_size
-                        y += step_size
+                    continue
 
                 # Decrement temperature
                 temp -= 0.1
