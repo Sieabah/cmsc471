@@ -51,6 +51,8 @@ class Optimization:
             evaluated_side = right
         elif direction == Direction.left:
             evaluated_side = left
+            # Account for going left
+            step_size = -step_size
         else:
             return current()
 
