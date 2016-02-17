@@ -15,5 +15,5 @@ def main():
 
     print(Optimization.hill_climb_random_restart(z, 0.1, 200))
 
-
+    print(Optimization.simulated_annealing(z, 0.1, 200))
 main()

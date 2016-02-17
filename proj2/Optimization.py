@@ -1,6 +1,7 @@
 from typing import Callable, Dict
 from enum import Enum
 from random import uniform
+import math
 
 
 class Direction(Enum):
@@ -29,8 +30,6 @@ class Optimization:
 
         # Found max
         return None
-
-
 
     @staticmethod
     def hill_climb(func: Callable[[float, float], float], step_size: float, start_x: float = None, start_y: float = None):
@@ -87,5 +86,53 @@ class Optimization:
         return total_max
 
     @staticmethod
-    def simulated_annealing(func: Callable[[float, float], float], step_size: float, max_temp: float):
-        pass
+    def annealing_probability(current: float, other: float, temp: float) -> float:
+        if other >= current:
+            return 1.0
+
+        if temp == 0:
+            return 0
+
+        return math.exp((other - current)/temp)
+
+    @staticmethod
+    def simulated_annealing(func: Callable[[float, float], float], step_size: float, max_temp: float) -> float:
+        def rand_coords() -> Dict[str, float]:
+            return {'x': uniform(0, 1/step_size), 'y': uniform(0, 1/step_size)}
+
+        left = lambda: func(x-step_size, y-step_size)
+        current = lambda: func(x, y)
+        right = lambda: func(x+step_size, y+step_size)
+
+        total_max = func(0, 0)
+
+        for i in range(max_temp):
+            temp = max_temp
+            coords = rand_coords()
+
+            x = coords.get('x', 0)
+            y = coords.get('y', 0)
+
+            left = lambda: func(x-step_size, y-step_size)
+            current = lambda: func(x, y)
+            right = lambda: func(x+step_size, y+step_size)
+
+            while temp > 0:
+                curr = current()
+
+                if curr > total_max:
+                    total_max = curr
+
+                p_left = Optimization.annealing_probability(curr, left(), temp)
+                p_right = Optimization.annealing_probability(curr, right(), temp)
+
+                if p_left > p_right:
+                    x -= step_size
+                    y -= step_size
+                else:
+                    x += step_size
+                    y += step_size
+
+                temp -= 1
+
+        return total_max
