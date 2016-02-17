@@ -12,6 +12,8 @@ Usage: driver.py
 
 from Optimization import Optimization
 import math
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def main():
@@ -23,10 +25,20 @@ def main():
             (_x ** 2 + 5 * _y ** 2) * (math.exp(1 - _r ** 2) / 2)
 
     #    print(Optimization.hill_climb(z, 0.1))
-    print(Optimization.hill_climb(z, 0.1))
+    result, plot = Optimization.hill_climb(z, 0.1)
 
-    print(Optimization.hill_climb_random_restart(z, 0.1, 200))
+    result, plot = Optimization.hill_climb_random_restart(z, 0.1, 200)
 
-    print(Optimization.simulated_annealing(z, 0.1, 200))
+    result, plot = Optimization.simulated_annealing(z, 0.1, 20)
+    print(result)
+
+    points = []
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    for trial in plot:
+        points = trial['points']
+        ax.plot_wireframe(X=points['x'],Y=points['y'],Z=points['z'], color=trial['color'])
+
+    plt.show()
 
 main()

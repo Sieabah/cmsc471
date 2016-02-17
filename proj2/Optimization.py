@@ -8,7 +8,7 @@ Holds all the different optimization functions
 """
 from typing import Callable, Dict
 from enum import Enum
-from random import uniform
+from random import uniform, randint
 import math
 
 
@@ -71,7 +71,11 @@ class Optimization:
 
         x = start_x
         y = start_y
-
+        graphPlot = {
+            'x': [],
+            'y': [],
+            'z': []
+        }
         # Define easy to use functions
         left = lambda: func(x-step_size, y-step_size)
         current = lambda: func(x, y)
@@ -163,6 +167,10 @@ class Optimization:
 
         total_max = func(0, 0)
 
+        plotgraph = []
+
+        color = lambda r,g,b: '#%02x%02x%02x' % (r, g, b)
+
         # for max_temp times
         for i in range(max_temp):
             temp = max_temp
@@ -175,9 +183,21 @@ class Optimization:
             current = lambda: func(x, y)
             right = lambda: func(x+step_size, y+step_size)
 
+            plotgraph.append({
+                'color': color(randint(0,255),randint(0,255),randint(0,255)),
+                'points': {
+                    'x': [],
+                    'y': [],
+                    'z': []
+                }
+            })
+
             # while temp
             while temp > 0:
                 curr = current()
+                plotgraph[len(plotgraph)-1]['points']['x'].append(x)
+                plotgraph[len(plotgraph)-1]['points']['y'].append(y)
+                plotgraph[len(plotgraph)-1]['points']['z'].append(curr)
 
                 if curr > total_max:
                     total_max = curr
@@ -201,4 +221,8 @@ class Optimization:
                 # Decrement temperature
                 temp -= 0.1
 
-        return total_max
+
+
+
+
+        return total_max, plotgraph
