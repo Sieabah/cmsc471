@@ -16,6 +16,17 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
+def create_graph(plot):
+    points = []
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    for trial in plot:
+        points = trial['points']
+        ax.plot_wireframe(X=points['x'],Y=points['y'],Z=points['z'], color=trial['color'])
+
+    plt.show()
+
+
 def main():
     # Function to optimize
     def z(_x: float, _y: float) -> float:
@@ -26,19 +37,18 @@ def main():
 
     #    print(Optimization.hill_climb(z, 0.1))
     result, plot = Optimization.hill_climb(z, 0.1)
+    print(result)
 
-    result, plot = Optimization.hill_climb_random_restart(z, 0.1, 200)
+    create_graph([{'color': '#000000', 'points': plot}])
+
+    result, plot = Optimization.hill_climb_random_restart(z, 0.1, 5)
+    print(result)
+
+    create_graph(plot)
 
     result, plot = Optimization.simulated_annealing(z, 0.1, 20)
     print(result)
 
-    points = []
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    for trial in plot:
-        points = trial['points']
-        ax.plot_wireframe(X=points['x'],Y=points['y'],Z=points['z'], color=trial['color'])
-
-    plt.show()
+    create_graph(plot)
 
 main()
