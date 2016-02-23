@@ -48,7 +48,7 @@ class Optimization:
         :param x: center-x
         :param y: center-y
         :param divisions: How many divisions of the circle
-        :return:
+        :return: max_x, max_y, highest
         """
         highest = func(x, y)
         max_x = x
@@ -205,7 +205,7 @@ class Optimization:
         """
 
         total_max = func(0, 0)
-
+        cooling_rate = 0.003
         plotgraph = []
 
         # for max_temp times
@@ -236,10 +236,10 @@ class Optimization:
                     total_max = current
 
                 # Go in a random direction
-                local_x, local_y, nxt = Optimization.calculate_func_at_degree(func, step_size, x, y, randint(0, 360))
+                local_x, local_y, high = Optimization.calculate_func_at_degree(func, step_size, x*uniform(0,1), y*uniform(0,1), randint(0,360))
 
                 # get probability of both sides
-                probability = Optimization.annealing_probability(current, nxt, temp)
+                probability = Optimization.annealing_probability(current, high, temp)
 
                 threshold = uniform(0, 1)
 
@@ -249,6 +249,6 @@ class Optimization:
                     y = local_y
 
                 # Decrement temperature
-                temp -= 0.1
+                temp *= cooling_rate
 
         return total_max, plotgraph

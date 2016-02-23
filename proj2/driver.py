@@ -83,8 +83,8 @@ def main():
             (_x ** 2 + 5 * _y ** 2) * (math.exp(1 - _r ** 2) / 2)
 
     step_size = 0.1
-    restarts = 5
-    max_temperature = 20
+    restarts = 20
+    max_temperature = 50
 
     results = dict(hill_climb={}, hill_climb_random={}, simulated_annealing={})
 
