@@ -6,3 +6,5 @@ out.txt
 *.tar
 *.zip
 *.7z
+deliverable/*.aux
+deliverable/*.log
