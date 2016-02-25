@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from time import time
 from typing import Tuple, List
+import Additional
 
 
 def color(tup: Tuple[int, int, int]) -> str:
@@ -89,6 +90,7 @@ def main():
         return math.sin(_x ** 2 + (3 * _y ** 2)) / (0.1 + _r ** 2) + \
             (_x ** 2 + 5 * _y ** 2) * (math.exp(1 - _r ** 2) / 2)
 
+    Additional.genGraph(z)
 
     # Variables to define
     # How far should each step be
