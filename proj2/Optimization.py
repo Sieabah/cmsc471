@@ -5,6 +5,11 @@ Author: Christopher Sidell (csidell1@umbc.edu)
 ID: JZ28610
 
 Holds all the different optimization functions
+
+Dependencies:
+    typing - Python 3.5.x+ typing
+    random - generating random numbers
+    math - trig and exponents
 """
 from typing import Callable, Dict, Tuple, List
 from random import uniform, randint
@@ -12,6 +17,10 @@ import math
 
 
 class Optimization:
+    """
+    Optimization class holds all the necessary functions and algorithms to run hill climbing and simulated annealing
+    """
+
     @staticmethod
     def rand_coords(step_size) -> Dict[str, float]:
         """
@@ -56,7 +65,10 @@ class Optimization:
 
         # For entire range 0 - 360
         for deg in range(math.ceil(360/divisions)):
+            # Get values at degree deg
             local_x, local_y, curr = Optimization.calculate_func_at_degree(func, step_size, x, y, deg)
+
+            # Is it higher?
             if curr >= highest:
                 highest = curr
                 max_x = local_x
@@ -176,7 +188,7 @@ class Optimization:
     @staticmethod
     def annealing_probability(current: float, other: float, temp: float) -> float:
         """
-        Probability function
+        The probability that the algorithm should go to this point.
         :param current: current value
         :param other: other value
         :param temp: temperature
@@ -197,7 +209,7 @@ class Optimization:
     def simulated_annealing(func: Callable[[float, float], float], step_size: float,
                             max_temp: float) -> Tuple[float, List[dict]]:
         """
-        Simulated annealing
+        Simulated annealing algorithm that allows climbing and decending based on a temperature
         :param func: function to call
         :param step_size: step size
         :param max_temp: max temperature
@@ -206,16 +218,24 @@ class Optimization:
 
         total_max = func(0, 0)
         cooling_rate = 0.003
+
+        # Algorithm says for a set number of iterations (Running max_temp iterations generates graph in paper)
+        iterations = 1
         plotgraph = []
 
         # for max_temp times
-        for i in range(max_temp):
+        for i in range(iterations):
+            # Set iterations max temperature
             temp = max_temp
+
+            # Random coordinates
             coords = Optimization.rand_coords(step_size)
 
+            # Set the coordinates
             x = coords.get('x', 0)
             y = coords.get('y', 0)
 
+            # setup plotgraph with empty first box
             plotgraph.append({
                 'color': Optimization.color(),
                 'points': {
@@ -227,23 +247,29 @@ class Optimization:
 
             # while temp
             while temp > 0:
+                # Get current value
                 current = func(x, y)
+
+                # Push this to the graph
                 plotgraph[len(plotgraph)-1]['points']['x'].append(x)
                 plotgraph[len(plotgraph)-1]['points']['y'].append(y)
                 plotgraph[len(plotgraph)-1]['points']['z'].append(current)
 
+                # Is it more max?
                 if current > total_max:
                     total_max = current
 
                 # Go in a random direction
-                local_x, local_y, high = Optimization.calculate_func_at_degree(func, step_size, x*uniform(0,1), y*uniform(0,1), randint(0,360))
+                local_x, local_y, next = Optimization.calculate_func_at_degree(func, step_size, x*uniform(0, 1),
+                                                                               y*uniform(0, 1), randint(0, 360))
 
-                # get probability of both sides
-                probability = Optimization.annealing_probability(current, high, temp)
+                # Get probability
+                probability = Optimization.annealing_probability(current, next, temp)
 
+                # Determine a threshold it must pass
                 threshold = uniform(0, 1)
 
-                # Determine which side is better
+                # Does it pass?
                 if probability > threshold:
                     x = local_x
                     y = local_y

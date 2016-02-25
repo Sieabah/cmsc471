@@ -8,6 +8,13 @@ driver.py runs optimization hill climb, and simulated annealing
 PYTHON VERSION: 3.5.1
 
 Usage: driver.py
+
+Dependencies:
+    Optimization - Optimization algorithms
+    math - For defining the 2d function
+    mathplotlib & mpl_toolkits - Visual graphs
+    time - calculating time
+    typing - Python 3.5.x+ typing
 """
 
 from Optimization import Optimization
@@ -82,10 +89,16 @@ def main():
         return math.sin(_x ** 2 + (3 * _y ** 2)) / (0.1 + _r ** 2) + \
             (_x ** 2 + 5 * _y ** 2) * (math.exp(1 - _r ** 2) / 2)
 
+
+    # Variables to define
+    # How far should each step be
     step_size = 0.1
+    # How many restarts should be calculated
     restarts = 20
+    # Max temperature
     max_temperature = 50
 
+    # Result holder
     results = dict(hill_climb={}, hill_climb_random={}, simulated_annealing={})
 
     # Run tests
