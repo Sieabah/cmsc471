@@ -28,11 +28,12 @@ class Optimization:
         :param step_size
         :return:
         """
+
         return {'x': uniform(-1/step_size, 1/step_size), 'y': uniform(-1/step_size, 1/step_size)}
 
     @staticmethod
-    def calculate_func_at_degree(func: Callable[[float, float], float], step_size:
-                float, x: float, y: float, deg: int) -> Tuple[float, float, float]:
+    def calculate_func_at_degree(func: Callable[[float, float], float], step_size:float,
+                                 x: float, y: float, deg: int) -> Tuple[float, float, float]:
         """
         Calculate the next value given center, radius, and degree
         :param func: function that has a value
@@ -42,6 +43,7 @@ class Optimization:
         :param deg: degree location
         :return:
         """
+
         rad = math.radians(deg)
         local_x = x+math.cos(rad)*step_size
         local_y = y+math.sin(rad)*step_size
@@ -59,6 +61,7 @@ class Optimization:
         :param divisions: How many divisions of the circle
         :return: max_x, max_y, highest
         """
+
         highest = func(x, y)
         max_x = x
         max_y = y
@@ -109,6 +112,7 @@ class Optimization:
         :param start_y: starting y
         :return:
         """
+
         if start_x is None:
             start_x = 0
         if start_y is None:
@@ -166,6 +170,7 @@ class Optimization:
             Attempt a hill climb with random starting points
             :return:
             """
+
             coords = Optimization.rand_coords(step_size)
             return Optimization.hill_climb(func, step_size, coords.get('x', 0), coords.get('y', 0))
 

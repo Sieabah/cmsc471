@@ -11,65 +11,27 @@ Usage: driver.py
 
 Dependencies:
     Optimization - Optimization algorithms
+    Additional - Graph generating
     math - For defining the 2d function
-    mathplotlib & mpl_toolkits - Visual graphs
-    time - calculating time
-    typing - Python 3.5.x+ typing
 """
-
+from Additional import create_graph, build_result
 from Optimization import Optimization
 import math
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from time import time
-from typing import Tuple, List
-import Additional
 
 
-def color(tup: Tuple[int, int, int]) -> str:
+# THIS IS THE FUNCTION THAT IS USED
+def z(_x: float, _y: float) -> float:
     """
-    Convert rgb tuple to hex
-    :param tup: (r,g,b)
+    Z-function given a x and y coordinate
+    :param _x: x parameter
+    :param _y: y parameter
     :return:
     """
-    return '#%02x%02x%02x' % (tup[0], tup[1], tup[2])
 
-
-def create_graph(plot: List[dict], title: str) -> None:
-    """
-    Create a 3D graph of plot data given
-    :param plot: expects dictionary {'color' :optional, 'points' :required}
-    :param title: Graph title
-    :return:
-    """
-    # Build 3D graph
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d', title=title)
-    # For each plot iteration
-    for idx, trial in enumerate(plot):
-        # Pull out points to variable
-        points = trial['points']
-        # Add lines
-        ax.plot(points['x'], points['y'], points['z'], color=color(trial['color']))
-
-    plt.show()
-
-
-def build_result(func):
-    """
-    Build the result set
-    :param func: function to get results from
-    :return: {'start', 'end', 'result', 'plot'}
-    """
-    results = dict()
-    results['start'] = time()
-
-    result = func()
-
-    results['end'] = time()
-    results['result'], results['plot'] = result
-
-    return results
+    # Example function given
+    _r = math.sqrt(_x ** 2 + _y ** 2)
+    return math.sin(_x ** 2 + (3 * _y ** 2)) / (0.1 + _r ** 2) + \
+           (_x ** 2 + 5 * _y ** 2) * (math.exp(1 - _r ** 2) / 2)
 
 
 def main():
@@ -77,20 +39,6 @@ def main():
     Main driver
     :return:
     """
-    # Function to optimize
-    def z(_x: float, _y: float) -> float:
-        """
-        Function
-        :param _x: x parameter
-        :param _y: y parameter
-        :return:
-        """
-        # Example function given
-        _r = math.sqrt(_x ** 2 + _y ** 2)
-        return math.sin(_x ** 2 + (3 * _y ** 2)) / (0.1 + _r ** 2) + \
-            (_x ** 2 + 5 * _y ** 2) * (math.exp(1 - _r ** 2) / 2)
-
-    Additional.genGraph(z)
 
     # Variables to define
     # How far should each step be
@@ -117,9 +65,9 @@ def main():
     print(' DONE')
 
     # Create the graphs
-    create_graph([{'color': (0, 0, 0), 'points': results['hill_climb']['plot']}], 'Hill Climb')
-    create_graph(results['hill_climb_random']['plot'], 'Hill climb with restarts')
-    create_graph(results['simulated_annealing']['plot'], 'Simulated Annealing')
+    create_graph([{'color': (255, 0, 0), 'points': results['hill_climb']['plot']}], 'Hill Climb', z)
+    create_graph(results['hill_climb_random']['plot'], 'Hill climb with restarts', z)
+    create_graph(results['simulated_annealing']['plot'], 'Simulated Annealing', z)
 
     # Make variables smaller
     hc = results['hill_climb']
