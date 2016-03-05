@@ -22,9 +22,15 @@ from typing import Callable, Tuple, List
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from math import floor, ceil
 from time import time
 import numpy as np
 
+
+class GraphSettings:
+    graph_resolution = 0.1
+    graph_alpha = 0.3
+    show_graph = False
 
 def color(tup: Tuple[int, int, int]) -> str:
     """
@@ -36,16 +42,22 @@ def color(tup: Tuple[int, int, int]) -> str:
     return '#%02x%02x%02x' % (tup[0], tup[1], tup[2])
 
 
-def create_graph(plot: List[dict], title: str, func: Callable[[float, float], float]) -> None:
+def create_graph(plot: List[dict], title: str, func: Callable[[float, float], float], xmin: float, xmax: float, ymin: float, ymax: float) -> None:
     """
     Create a 3D graph of plot data given
+
+    :param func:
     :param plot: expects dictionary {'color' :optional, 'points' :required}
     :param title: Graph title
+    :param xmin:
+    :param xmax:
+    :param ymin:
+    :param ymax:
     :return:
     """
 
     # Build 3D graphgenGraph
-    fig, ax = build(func, title, showgraph=True)
+    fig, ax = build(func, title, int(floor(xmin)), int(ceil(xmax)), int(floor(ymin)), int(ceil(ymax)))
 
     # For each plot iteration
     for idx, trial in enumerate(plot):
@@ -75,36 +87,39 @@ def build_result(func):
     return results
 
 
-def build(func: Callable[[float, float], float]=None, title: str='', showgraph: bool=False, graphsize: int=10) -> Tuple:
+def build(func: Callable[[float, float], float]=None, title: str='', xmin: int=-10,
+          xmax: int=10, ymin: int=-10, ymax: int=10) -> Tuple:
     """
     Build the graph with horribly optimized generation
     :param func: function to determine z value
     :param title: title of graph
-    :param showgraph: Show the graph of the function
-    :param graphsize: The range of the graph (-size, -size) to (size, size)
+    :param xmin:
+    :param xmax:
+    :param ymin:
+    :param ymax:
     :return:
     """
     # Build 3D graph
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d', title=title)
 
-    if showgraph:
+    if GraphSettings.show_graph:
         plot = {
             'x': [],
             'y': [],
             'z': []
         }
 
-        #Generate 3d-graph plot
-        for x in np.arange(-graphsize, graphsize, 0.1):
+        # Generate 3d-graph plot
+        for x in np.arange(xmin, xmax, GraphSettings.graph_resolution):
             plot['x'].append([])
             plot['y'].append([])
             plot['z'].append([])
-            for y in np.arange(-graphsize, graphsize, 0.1):
+            for y in np.arange(ymin, ymax, GraphSettings.graph_resolution):
                 plot['x'][-1].append(x)
                 plot['y'][-1].append(y)
                 plot['z'][-1].append(func(x, y))
 
-        ax.plot_surface(plot['x'], plot['y'], plot['z'], cmap=cm.RdGy, alpha=0.3)
+        ax.plot_surface(plot['x'], plot['y'], plot['z'], cmap=cm.RdGy, alpha=GraphSettings.graph_alpha)
 
     return fig, ax

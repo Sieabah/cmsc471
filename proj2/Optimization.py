@@ -32,6 +32,19 @@ class Optimization:
         return {'x': uniform(-1/step_size, 1/step_size), 'y': uniform(-1/step_size, 1/step_size)}
 
     @staticmethod
+    def rand_coords(xmin: float, xmax: float, ymin: float, ymax: float) -> Dict[str, float]:
+        """
+        Returns random x,y coordinates between 1/step_size
+        :param xmin:
+        :param xmax:
+        :param ymin:
+        :param ymax:
+        :return:
+        """
+
+        return {'x': uniform(xmin, xmax), 'y': uniform(ymin, ymax)}
+
+    @staticmethod
     def calculate_func_at_degree(func: Callable[[float, float], float], step_size:float,
                                  x: float, y: float, deg: int) -> Tuple[float, float, float]:
         """
@@ -102,8 +115,8 @@ class Optimization:
         return r, g, b
 
     @staticmethod
-    def hill_climb(func: Callable[[float, float], float], step_size: float,
-                   start_x: float = None, start_y: float = None) -> Tuple[float, dict]:
+    def hill_climb(func: Callable[[float, float], float], step_size: float, xmin: float = None,
+                   xmax: float = None, ymin: float = None, ymax: float = None, x: float=None, y:float = None) -> Tuple[float, dict]:
         """
         Generalize hill climb algorithm
         :param func: function to call
@@ -113,13 +126,16 @@ class Optimization:
         :return:
         """
 
-        if start_x is None:
-            start_x = 0
-        if start_y is None:
-            start_y = 0
+        if xmin is None or xmax is None:
+            xmin = xmax = 0
+        if ymin is None or ymax is None:
+            ymin = ymax = 0
 
-        x = start_x
-        y = start_y
+        # If x and y are already set, use those values to hill climb
+        if x is None or y is None:
+            coords = Optimization.rand_coords(xmin, xmax, ymin, ymax)
+            x = coords.get('x', 0)
+            y = coords.get('y', 0)
 
         # Start with empty plot
         plotgraph = {
@@ -156,12 +172,17 @@ class Optimization:
 
     @staticmethod
     def hill_climb_random_restart(func: Callable[[float, float], float], step_size: float,
-                                  num_restarts: int) -> Tuple[float, List[dict]]:
+                                  num_restarts: int, xmin: float = None, xmax: float = None,
+                                  ymin: float = None, ymax: float = None) -> Tuple[float, List[dict]]:
         """
         Hill climbing with random restarts
         :param func: function to call
         :param step_size: step size
         :param num_restarts: how many times to restart
+        :param xmin:
+        :param xmax:
+        :param ymin:
+        :param ymax:
         :return:
         """
 
@@ -171,8 +192,8 @@ class Optimization:
             :return:
             """
 
-            coords = Optimization.rand_coords(step_size)
-            return Optimization.hill_climb(func, step_size, coords.get('x', 0), coords.get('y', 0))
+            coords = Optimization.rand_coords(xmin, xmax, ymin, ymax)
+            return Optimization.hill_climb(func, step_size, x=coords.get('x', 0), y=coords.get('y', 0))
 
         total_max = None
 
@@ -212,12 +233,17 @@ class Optimization:
     # TODO: Make this work correctly
     @staticmethod
     def simulated_annealing(func: Callable[[float, float], float], step_size: float,
-                            max_temp: float) -> Tuple[float, List[dict]]:
+                            max_temp: float, xmin: float = None, xmax: float = None,
+                            ymin: float = None, ymax: float = None) -> Tuple[float, List[dict]]:
         """
         Simulated annealing algorithm that allows climbing and decending based on a temperature
         :param func: function to call
         :param step_size: step size
         :param max_temp: max temperature
+        :param xmin:
+        :param xmax:
+        :param ymin:
+        :param ymax:
         :return:
         """
 
@@ -234,7 +260,7 @@ class Optimization:
             temp = max_temp
 
             # Random coordinates
-            coords = Optimization.rand_coords(step_size)
+            coords = Optimization.rand_coords(xmin, xmax, ymin, ymax)
 
             # Set the coordinates
             x = coords.get('x', 0)
@@ -265,11 +291,11 @@ class Optimization:
                     total_max = current
 
                 # Go in a random direction
-                local_x, local_y, next = Optimization.calculate_func_at_degree(func, step_size, x*uniform(0, 1),
+                local_x, local_y, highest = Optimization.calculate_func_at_degree(func, step_size, x*uniform(0, 1),
                                                                                y*uniform(0, 1), randint(0, 360))
 
                 # Get probability
-                probability = Optimization.annealing_probability(current, next, temp)
+                probability = Optimization.annealing_probability(current, highest, temp)
 
                 # Determine a threshold it must pass
                 threshold = uniform(0, 1)
