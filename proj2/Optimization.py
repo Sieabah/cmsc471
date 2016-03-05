@@ -247,7 +247,7 @@ class Optimization:
         :return:
         """
 
-        total_max = func(0, 0)
+        total_max = None
         cooling_rate = 0.003
 
         # Algorithm says for a set number of iterations (Running max_temp iterations generates graph in paper)
@@ -265,6 +265,9 @@ class Optimization:
             # Set the coordinates
             x = coords.get('x', 0)
             y = coords.get('y', 0)
+
+            if total_max is None:
+                total_max = func(x,y)
 
             # setup plotgraph with empty first box
             plotgraph.append({
