@@ -116,13 +116,15 @@ class Optimization:
 
     @staticmethod
     def hill_climb(func: Callable[[float, float], float], step_size: float, xmin: float = None,
-                   xmax: float = None, ymin: float = None, ymax: float = None, x: float=None, y:float = None) -> Tuple[float, dict]:
+                   xmax: float = None, ymin: float = None, ymax: float = None, x: float=None, y:float = None) -> Tuple[float, float, dict]:
         """
         Generalize hill climb algorithm
         :param func: function to call
         :param step_size: how big is the step
-        :param start_x: starting x
-        :param start_y: starting y
+        :param xmin:
+        :param xmax:
+        :param ymin:
+        :param ymax:
         :return:
         """
 
@@ -156,7 +158,7 @@ class Optimization:
 
             # If result is none, we're at the peak
             if result is None:
-                return func(x, y), plotgraph
+                return x, y, plotgraph
 
             # Unwrap the variables
             x, y, z = result
@@ -173,7 +175,7 @@ class Optimization:
     @staticmethod
     def hill_climb_random_restart(func: Callable[[float, float], float], step_size: float,
                                   num_restarts: int, xmin: float = None, xmax: float = None,
-                                  ymin: float = None, ymax: float = None) -> Tuple[float, List[dict]]:
+                                  ymin: float = None, ymax: float = None) -> Tuple[float, float, List[dict]]:
         """
         Hill climbing with random restarts
         :param func: function to call
@@ -196,20 +198,25 @@ class Optimization:
             return Optimization.hill_climb(func, step_size, x=coords.get('x', 0), y=coords.get('y', 0))
 
         total_max = None
+        max_x = None
+        max_y = None
 
         graphPlots = []
 
         # +1 to always run once
         for n in range(num_restarts+1):
-            tmp, plot = attempt()
+            x, y, plot = attempt()
 
             graphPlots.append({'color': Optimization.color(), 'points': plot})
 
+            tmp = func(x, y)
             # Get total max
             if total_max is None or tmp > total_max:
                 total_max = tmp
+                max_x = x
+                max_y = y
 
-        return total_max, graphPlots
+        return max_x, max_y, graphPlots
 
     @staticmethod
     def annealing_probability(current: float, other: float, temp: float) -> float:
@@ -248,6 +255,9 @@ class Optimization:
         """
 
         total_max = None
+        max_x = None
+        max_y = None
+
         cooling_rate = 0.003
 
         # Algorithm says for a set number of iterations (Running max_temp iterations generates graph in paper)
@@ -292,6 +302,8 @@ class Optimization:
                 # Is it more max?
                 if current > total_max:
                     total_max = current
+                    max_x = x
+                    max_y = y
 
                 # Go in a random direction
                 local_x, local_y, highest = Optimization.calculate_func_at_degree(func, step_size, x*uniform(0, 1),
@@ -311,4 +323,4 @@ class Optimization:
                 # Decrement temperature
                 temp *= cooling_rate
 
-        return total_max, plotgraph
+        return max_x, max_y, plotgraph

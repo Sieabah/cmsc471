@@ -82,7 +82,9 @@ def build_result(func):
     result = func()
 
     results['end'] = time()
-    results['result'], results['plot'] = result
+    x, y, results['plot'] = result
+
+    results['coords'] = (x, y)
 
     return results
 

@@ -86,9 +86,15 @@ def main():
     sa = results['simulated_annealing']
 
     # Print results
-    print('hill climbing', hc['result'], 'time: ', hc['end']-hc['start'])
-    print('hill climbing with restarts', hc_res['result'], 'time: ', hc_res['end']-hc_res['start'])
-    print('simulated annealing', sa['result'], 'time: ', sa['end']-sa['start'])
+    print('hill climbing',
+          hc['coords'], z(hc['coords'][0], hc['coords'][1]),
+          'time: ', hc['end']-hc['start'])
+    print('hill climbing with restarts',
+          hc_res['coords'], z(hc_res['coords'][0], hc_res['coords'][1]),
+          'time: ', hc_res['end']-hc_res['start'])
+    print('simulated annealing',
+          sa['coords'], z(sa['coords'][0], sa['coords'][1]),
+          'time: ', sa['end']-sa['start'])
 
 
 main()
