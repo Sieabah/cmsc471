@@ -45,7 +45,7 @@ def main():
     ymin = -2.5
     ymax = 2.5
 
-    GraphSettings.graph_resolution = 0.01
+    GraphSettings.graph_resolution = 0.1
     GraphSettings.graph_alpha = 0.1
     GraphSettings.show_graph = True
 
