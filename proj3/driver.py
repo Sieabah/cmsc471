@@ -1,6 +1,8 @@
 from PIL import Image
-import sys
+from similarity import find_most_similar
 import os
+import sys
+
 
 def main():
 
@@ -10,14 +12,18 @@ def main():
 
     imgFp = sys.argv[1]
 
+    if imgFp == 'ALL':
+        for fp in os.listdir('.'):
+            if fp.endswith('.jpg') or fp.endswith('.png'):
+                print(fp, 'is found to be a', find_most_similar(Image.open(fp)))
+        sys.exit(0)
+
     if not os.path.exists(imgFp):
         print(imgFp, 'file does not exist!')
         sys.exit(1)
-    elif not imgFp.endswith('jpg'):
-        print('File not supported!')
-        sys.exit(1)
 
     img = Image.open(imgFp)
-    pixelArr = img.getdata()
+
+    print(find_most_similar(img))
 
 main()
