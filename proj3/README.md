@@ -9,6 +9,8 @@ Python 3.5.1
 - [Pillow](https://github.com/python-pillow/Pillow): Image Manipulation
 - [NumPy](http://www.numpy.org/): Extra math
 
+To install these just *pip install \<package\>* inside your conda environment.
+
 ## Algorithm
 
 http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
